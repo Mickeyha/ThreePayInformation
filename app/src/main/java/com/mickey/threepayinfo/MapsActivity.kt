@@ -87,7 +87,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val sydney = LatLng(25.110105, 121.514895)
         val pic = resources.getDrawable(R.drawable.ic_local_atm_24px)
         val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-        mMap.addMarker(MarkerOptions().position(sydney).title("臺北市 北投區").snippet("100000張三倍卷\n(02)2823-0602").snippet("100000張三倍卷\n(02)2823-0602"))
+        mStoreList.forEach { model ->
+            if (model.latitude != null && model.longitude != null) {
+                val lat = model.latitude!!.toDouble()
+                val long = model.longitude!!.toDouble()
+                val latLng = LatLng(lat, long)
+                mMap.addMarker(MarkerOptions().position(latLng))
+
+            }
+        }
+
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney, 12.0f))
 
     }
