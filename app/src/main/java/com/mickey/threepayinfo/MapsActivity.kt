@@ -4,15 +4,20 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.mickey.threepayinfo.R.drawable.ic_noun_mask
 import com.mickey.threepayinfo.data.StoreModel
+import com.mickey.threepayinfo.util.BitmapHelper
 import org.json.JSONArray
 import org.json.JSONException
 import java.io.BufferedReader
@@ -24,6 +29,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private var mStoreList = mutableListOf<StoreModel>()
+
+    private val maskIcon: BitmapDescriptor by lazy {
+        val color = ContextCompat.getColor(this, R.color.colorPrimary)
+        BitmapHelper.vectorToBitmap(this, ic_noun_mask, color)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,24 +90,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
         // Add a marker in Sydney and move the camera
-        val sydney = LatLng(25.110105, 121.514895)
-        val pic = resources.getDrawable(R.drawable.ic_local_atm_24px)
-        val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-        mStoreList.forEach { model ->
-            if (model.latitude != null && model.longitude != null) {
-                val lat = model.latitude!!.toDouble()
-                val long = model.longitude!!.toDouble()
-                val latLng = LatLng(lat, long)
-                mMap.addMarker(MarkerOptions().position(latLng))
+        val someWhere = LatLng(25.039114, 121.536649)
+        mMap.addMarker(
+            MarkerOptions()
+                .icon(maskIcon)
+                .position(someWhere)
+        )
 
-            }
-        }
-
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney, 12.0f))
-
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(someWhere, 12.0f))
     }
 }
