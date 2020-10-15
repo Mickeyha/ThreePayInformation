@@ -27,7 +27,6 @@ import java.io.InputStreamReader
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private lateinit var mMap: GoogleMap
     private var mStoreList = mutableListOf<StoreModel>()
 
     private val maskIcon: BitmapDescriptor by lazy {
@@ -92,16 +91,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
 
     override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
+        var center = LatLng(0.00, 0.00)
 
-        // Add a marker in Sydney and move the camera
-        val someWhere = LatLng(25.039114, 121.536649)
-        mMap.addMarker(
-            MarkerOptions()
-                .icon(maskIcon)
-                .position(someWhere)
-        )
+        mStoreList.forEachIndexed { index, model ->
+            model.latitude?.let { lat ->
+                model.longitude?.let { long ->
+                    val latLng = LatLng(lat.toDouble(), long.toDouble())
+                    googleMap.addMarker(
+                        MarkerOptions()
+                        .icon(maskIcon)
+                        .position(latLng))
 
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(someWhere, 12.0f))
+                    if (index == 0) {
+                        center = latLng
+                    }
+                }
+            }
+        }
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, 7.0f))
     }
+
+
+
 }
