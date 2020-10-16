@@ -1,6 +1,5 @@
 package com.mickey.threepayinfo
 
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -10,14 +9,14 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.google.maps.android.clustering.ClusterManager
 import com.mickey.threepayinfo.R.drawable.ic_noun_mask
 import com.mickey.threepayinfo.data.StoreModel
 import com.mickey.threepayinfo.util.BitmapHelper
+import com.mickey.threepayinfo.util.StoreRenderer
 import org.json.JSONArray
 import org.json.JSONException
 import java.io.BufferedReader
@@ -28,21 +27,43 @@ import java.io.InputStreamReader
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var mStoreList = mutableListOf<StoreModel>()
-
-    private val maskIcon: BitmapDescriptor by lazy {
-        val color = ContextCompat.getColor(this, R.color.colorPrimary)
-        BitmapHelper.vectorToBitmap(this, ic_noun_mask, color)
-    }
-
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
+        parseJsonDataFromString(readInfoFromResources())
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        mapFragment.getMapAsync { googleMap ->
+            //addMarkers(googleMap)
+            addClusteredMarkers(googleMap)
 
-        parseJsonDataFromString(readInfoFromResources())
+            val center = LatLng(23.921171, 120.942711)
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, 7.0f))
+        }
+    }
+
+    private fun addClusteredMarkers(googleMap: GoogleMap) {
+        // Create the ClusterManager class and set the custom renderer.
+        val clusterManager = ClusterManager<StoreModel>(this, googleMap)
+        clusterManager.renderer = StoreRenderer(
+            this,
+            googleMap,
+            clusterManager
+        )
+
+        // Add the places to the ClusterManager.
+        clusterManager.addItems(mStoreList)
+        clusterManager.cluster()
+
+        // Set ClusterManager as the OnCameraIdleListener so that it
+        // can re-cluster when zooming in and out.
+        googleMap.setOnCameraIdleListener {
+            clusterManager.onCameraIdle()
+        }
     }
 
     private fun parseJsonDataFromString(readInfoFromResources: String?) {
@@ -80,37 +101,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return builder.toString()
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-
     override fun onMapReady(googleMap: GoogleMap) {
-        var center = LatLng(0.00, 0.00)
 
-        mStoreList.forEachIndexed { index, model ->
-            model.latitude?.let { lat ->
-                model.longitude?.let { long ->
-                    val latLng = LatLng(lat.toDouble(), long.toDouble())
-                    googleMap.addMarker(
-                        MarkerOptions()
-                        .icon(maskIcon)
-                        .position(latLng))
-
-                    if (index == 0) {
-                        center = latLng
-                    }
-                }
-            }
-        }
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, 7.0f))
     }
-
-
-
 }
