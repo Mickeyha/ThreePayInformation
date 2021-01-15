@@ -9,3 +9,5 @@
 
 [Swagger](https://3000.gov.tw/hpgapi-openmap/swagger-ui.html;#/%E6%8C%AF%E8%88%88%E4%B8%89%E5%80%8D%E5%88%B8API/getPostDataUsingGET
 )
+
+![image](https://github.com/Mickeyha/ThreePayInformation/blob/master/Marker%20Cluster%201.png)
